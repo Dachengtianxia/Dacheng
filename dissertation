@@ -1,0 +1,259 @@
+#UK analysis
+#UK data set
+LA <- c(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1)
+NG <- c(0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1)
+PF <- c(0,0,0,0,1,1,1,1,0,0,0,0,1,1,1,1,0,0,0,0,1,1,1,1,0,0,0,0,1,1,1,1)
+GO <- c(0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1)
+GP <- c(0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1)
+y <- c(NA,316,695,8,995,11,76,0,463,1,19,0,62,0,4,0,54,0,3,0,19,0,0,0,15,0,1,0,1,0,1,0)
+
+UK <- data.frame(LA,NG,PF,GO,GP,y)
+UK
+
+miss.x<-data.frame(LA=0,NG=0,PF=0,GO=0,GP=0)
+
+y2<-UK$y
+y2[is.na(y2)]<-0
+
+library(MASS)
+
+#AIC method
+orimod <- glm(y ~ (LA+NG+PF+GO+GP)^2, family=poisson,data=UK)
+AIC_mod <- stepAIC(orimod, direction = "backward")
+sum <- sum(UK$y,na.rm=TRUE) + predict(AIC_mod,newdata=miss.x,type="response")
+
+summary(AIC_mod)
+sum
+
+#Bootstrap_AIC method
+resum <- {}
+for(i in 1:10000){
+  redata <- rmultinom(n=1, size=sum(y2),prob=y2/sum(y2))
+  redata[1] <- NA
+  orimod <- glm(redata ~ (LA+NG+PF+GO+GP)^2, family=poisson,data=UK)
+  remod <- stepAIC(orimod, direction = "backward")
+  resum[i] <- sum(UK$redata,na.rm=TRUE) + predict(remod,newdata=miss.x,type="response")
+}
+
+mean(resum)
+quantile(resum, c(0.025,0.975))
+
+
+#BIC method
+orimod <- glm(y ~ (LA+NG+PF+GO+GP)^2, family=poisson,data=UK)
+n = length(y)
+BIC_mod <- stepAIC(orimod,k = log(n), direction = "backward")
+sum <- sum(UK$y,na.rm=TRUE) + predict(BIC_mod,newdata=miss.x,type="response")
+
+summary(BIC_mod)
+sum
+
+#Bootstrap_BIC method
+
+resum <- {}
+for(i in 1:10000){
+  redata <- rmultinom(n=1, size=sum(y2),prob=y2/sum(y2))
+  redata[1] <- NA
+  orimod <- glm(redata ~ (LA+NG+PF+GO+GP)^2, family=poisson,data=UK)
+  n = length(redata)
+  fit_BIC = stepAIC(orimod,k = log(n), direction="backward")
+  resum[i] <- sum(UK$redata,na.rm=TRUE) + predict(fit_BIC,newdata=miss.x,type="response")
+}
+
+mean(resum)
+quantile(resum, c(0.025,0.975))
+
+
+#Bayes method
+library(conting)
+
+test1<-bict(formula=y~(LA+NG+PF+GO+GP)^2,data=UK,n.sample=100,prior="UIP")
+tp<-total_pop(test1,n.burnin=10)
+resum <- tp$meanTOT
+resum
+
+summmary(test1)
+
+#Bootstrap_Bayes method
+resum <- {}
+for(i in 1:10000){
+  redata <- rmultinom(n=1, size=sum(y2),prob=y2/sum(y2))
+  redata[1] <- NA
+  test1<-bict(formula=redata~(LA+NG+PF+GO+GP)^2,data=UK,n.sample=100,prior="UIP")
+  tp<-total_pop(test1,n.burnin=10)
+  resum[i] <- tp$meanTOT
+}
+
+mean(resum)
+quantile(resum, c(0.025,0.975))
+
+
+#Netherlands Analysis
+#Netherlands data
+I <- c(0,1,0,0,0,0,1,1,1,1,0,0,0,0,0,0,1,1,0)
+K <- c(0,0,1,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0)
+P <- c(0,0,0,1,0,0,1,0,0,0,1,0,0,1,1,0,1,1,1)
+R <- c(0,0,0,0,1,0,0,1,0,0,0,1,0,1,0,1,0,1,1)
+Z <- c(0,0,0,0,0,1,0,0,1,0,0,0,1,0,1,1,1,0,1)
+y <- c(NA,756,1299,4466,650,632,81,5,73,1,44,0,4,82,125,2,11,2,1)
+
+Nether <- data.frame(I,K,P,R,Z,y)
+Nether
+
+miss.x<-data.frame(I=0,K=0,O=0,P=0,R=0,Z=0)
+
+y2<-Nether$y
+y2[is.na(y2)]<-0
+
+library(MASS)
+
+#AIC method
+orimod <- glm(y ~ (I+K+P+R+Z)^2, family=poisson,data=Nether)
+AIC_mod <- stepAIC(orimod, direction = "backward")
+sum <- sum(Nether$y,na.rm=TRUE) + predict(AIC_mod,newdata=miss.x,type="response")
+
+summary(AIC_mod)
+sum
+
+#Bootstrap_AIC method
+resum <- {}
+for(i in 1:10000){
+  redata <- rmultinom(n=1, size=sum(y2),prob=y2/sum(y2))
+  redata[1] <- NA
+  orimod <- glm(redata ~ (I+K+P+R+Z)^2, family=poisson,data=Nether)
+  remod <- stepAIC(orimod, direction = "backward")
+  resum[i] <- sum(Nether$redata,na.rm=TRUE) + predict(remod,newdata=miss.x,type="response")
+}
+
+mean(resum)
+quantile(resum, c(0.025,0.975))
+
+#BIC method
+orimod <- glm(y ~ (I+K+P+R+Z)^2, family=poisson,data=Nether)
+n = length(y)
+BIC_mod <- stepAIC(orimod,k = log(n), direction = "backward")
+sum <- sum(Nether$y,na.rm=TRUE) + predict(BIC_mod,newdata=miss.x,type="response")
+
+summary(BIC_mod)
+sum
+
+#Bootstrap_BIC method
+resum <- {}
+for(i in 1:10000){
+  redata <- rmultinom(n=1, size=sum(y2),prob=y2/sum(y2))
+  redata[1] <- NA
+  orimod <- glm(redata ~ (I+K+P+R+Z)^2, family=poisson,data=Nether)
+  n = length(redata)
+  fit_BIC = stepAIC(orimod,k = log(n), direction="backward")
+  resum[i] <- sum(Nether$redata,na.rm=TRUE) + predict(fit_BIC,newdata=miss.x,type="response")
+}
+
+mean(resum)
+quantile(resum, c(0.025,0.975))
+
+#Bayes method
+library(conting)
+
+test1<-bict(formula=y~(I+K+P+R+Z)^2,data=Nether,n.sample=100,prior="UIP")
+tp<-total_pop(test1,n.burnin=10)
+resum <- tp$meanTOT
+resum
+
+summary(test1)
+
+#Bootstrap_Bayes method
+resum <- {}
+for(i in 1:10000){
+  redata <- rmultinom(n=1, size=sum(y2),prob=y2/sum(y2))
+  redata[1] <- NA
+  test1<-bict(formula=redata~(I+K+P+R+Z)^2,data=Nether,n.sample=100,prior="UIP")
+  tp<-total_pop(test1,n.burnin=10)
+  resum[i] <- tp$meanTOT
+}
+
+mean(resum)
+quantile(resum, c(0.025,0.975))
+
+
+#IDUs Analysis
+#IDUs data
+S1 <- c(0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1)
+S2 <- c(0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1)
+S3 <- c(0,0,0,0,1,1,1,1,0,0,0,0,1,1,1,1)
+S4 <- c(0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1)
+y <- c(NA,654,751,19,3092,198,121,8,684,13,43,2,69,7,9,0)
+
+ScotPWID <- data.frame(S1,S2,S3,S4,y)
+ScotPWID
+
+miss.x<-data.frame(S1=0,S2=0,S3=0,S4=0)
+
+y2<-ScotPWID$y
+y2[is.na(y2)]<-0
+
+library(MASS)
+
+#AIC method
+orimod <- glm(y ~ (S1+S2+S3+S4)^2, family=poisson,data=ScotPWID)
+AIC_mod <- stepAIC(orimod, direction = "backward")
+sum <- sum(ScotPWID$y,na.rm=TRUE) + predict(AIC_mod,newdata=miss.x,type="response")
+sum
+
+#Bootstrap_AIC method
+resum <- {}
+for(i in 1:10000){
+  redata <- rmultinom(n=1, size=sum(y2),prob=y2/sum(y2))
+  redata[1] <- NA
+  orimod <- glm(redata ~ (S1+S2+S3+S4)^2, family=poisson,data=ScotPWID)
+  remod <- stepAIC(orimod, direction = "backward")
+  resum[i] <- sum(ScotPWID$redata,na.rm=TRUE) + predict(remod,newdata=miss.x,type="response")
+}
+
+mean(resum)
+quantile(resum, c(0.025,0.975))
+
+#BIC method
+orimod <- glm(y ~ (S1+S2+S3+S4)^2, family=poisson,data=ScotPWID)
+n = length(y)
+BIC_mod <- stepAIC(orimod,k = log(n), direction = "backward")
+sum <- sum(ScotPWID$y,na.rm=TRUE) + predict(BIC_mod,newdata=miss.x,type="response")
+sum
+
+#Bootstrap_BIC method
+resum <- {}
+for(i in 1:10000){
+  redata <- rmultinom(n=1, size=sum(y2),prob=y2/sum(y2))
+  redata[1] <- NA
+  orimod <- glm(redata ~ (S1+S2+S3+S4)^2, family=poisson,data=ScotPWID)
+  n = length(redata)
+  fit_BIC = stepAIC(orimod,k = log(n), direction="backward")
+  resum[i] <- sum(ScotPWID$redata,na.rm=TRUE) + predict(fit_BIC,newdata=miss.x,type="response")
+}
+
+mean(resum)
+quantile(resum, c(0.025,0.975))
+
+#Bayes method
+library(conting)
+
+test1<-bict(formula=y~(S1+S2+S3+S4)^2,data=ScotPWID,n.sample=100,prior="UIP")
+tp<-total_pop(test1,n.burnin=10)
+resum <- tp$meanTOT
+resum
+
+summary(test1)
+
+#Bootstrap_Bayes method
+resum <- {}
+for(i in 1:10000){
+  redata <- rmultinom(n=1, size=sum(y2),prob=y2/sum(y2))
+  redata[1] <- NA
+  test1<-bict(formula=redata~(S1+S2+S3+S4)^2,data=ScotPWID,n.sample=100,prior="UIP")
+  tp<-total_pop(test1,n.burnin=10)
+  resum[i] <- tp$meanTOT
+}
+
+mean(resum)
+quantile(resum, c(0.025,0.975))
+
+
