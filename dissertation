@@ -72,7 +72,7 @@ tp<-total_pop(test1,n.burnin=10)
 resum <- tp$meanTOT
 resum
 
-summmary(test1)
+summary(test1)
 
 #Bootstrap_Bayes method
 resum <- {}
@@ -199,6 +199,8 @@ AIC_mod <- stepAIC(orimod, direction = "backward")
 sum <- sum(ScotPWID$y,na.rm=TRUE) + predict(AIC_mod,newdata=miss.x,type="response")
 sum
 
+summary(AIC_mod)
+
 #Bootstrap_AIC method
 resum <- {}
 for(i in 1:10000){
@@ -218,6 +220,8 @@ n = length(y)
 BIC_mod <- stepAIC(orimod,k = log(n), direction = "backward")
 sum <- sum(ScotPWID$y,na.rm=TRUE) + predict(BIC_mod,newdata=miss.x,type="response")
 sum
+
+summary(BIC_mod)
 
 #Bootstrap_BIC method
 resum <- {}
